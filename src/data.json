@@ -1,0 +1,35 @@
+[
+    {
+      "uuid": "60636ce7dc987b063e374265",
+      "sku": "11237525135DEBA",
+      "status": "Active",
+      "description": "Main pulley (China)",
+      "supplier": "OEM",
+      "costPrice": 100.00,
+      "sellingPrice": 150.00,
+      "stockLevel": 20,
+      "reservedStock": 5,
+      "availableStock": 15,
+      "photoUrl": "http://example.com/photo1.jpg",
+      "partType": "OEM",
+      "minStockLevel": 5,
+      "archived": false
+    },
+    {
+      "uuid": "60636ce7dc987b063e374266",
+      "sku": "11237525136DEBB",
+      "status": "Active",
+      "description": "Tensioner (Germany)",
+      "supplier": "OEM",
+      "costPrice": 120.00,
+      "sellingPrice": 180.00,
+      "stockLevel": 30,
+      "reservedStock": 10,
+      "availableStock": 20,
+      "photoUrl": "http://example.com/photo2.jpg",
+      "partType": "OEM",
+      "minStockLevel": 5,
+      "archived": false
+    }
+  ]
+  
