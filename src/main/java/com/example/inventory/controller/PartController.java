@@ -5,6 +5,8 @@ import com.example.inventory.repository.PartRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,5 +34,10 @@ public class PartController {
         return savedPart;
     }
 
-    // Additional endpoints can be added here as needed
+    @GetMapping
+    public List<Part> getAllParts() {
+        logger.info("Received GET request to fetch all parts");
+        return partRepository.findAll();
+    }
+    
 }
