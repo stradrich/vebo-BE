@@ -7,8 +7,10 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 
@@ -36,19 +38,14 @@ public class Part {
     private Supplier supplier; 
 
     @JsonProperty("costPrice")
+    @Min(value = 0, message = "Cost price must be greater than or equal to 0")
     private double costPrice;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("sellingPrice")
-    private double sellingPrice;
+    private Double sellingPrice;
 
-    @JsonProperty("stockLevel")
-    private int stockLevel;
-
-    @JsonProperty("reservedStock")
-    private int reservedStock;
-
-    @JsonProperty("availableStock")
-    private int availableStock;
+  
 
     // Key Requirements for photoUrl:
     // File Upload: Allow users to upload a photo, ideally using a REST API endpoint.
@@ -63,17 +60,31 @@ public class Part {
     @JsonProperty("partType")
     private PartType partType;
 
-    @JsonProperty("minStockLevel")
-    private int minStockLevel;
-
     @JsonProperty("archived")
     private boolean archived;
 
+    //controlledPart
     @JsonProperty("controlled")
-    private boolean controlled;
+    private ControlState controlled;
 
+    //control stock (ENABLER!)
     @JsonProperty("controlStock")
-    private boolean controlStock;
+    private ControlStock controlStock;
+
+    // stockLevel, reservedStock, availableStock, minStockLevel DEPENDS on controlStock
+    // if controlStock, enable them. 
+    // int defaults to 0, which might incorrectly suggest that the field is intentionally initialized.
+    @JsonProperty("stockLevel")
+    private Integer stockLevel; // Nullable
+    
+    @JsonProperty("reservedStock")
+    private Integer reservedStock; // Nullable
+    
+    @JsonProperty("availableStock")
+    private Integer availableStock; // Nullable
+    
+    @JsonProperty("minStockLevel")
+    private Integer minStockLevel; // Nullable
 
     // ENUMS LISTS
     public enum PartType {
@@ -102,7 +113,6 @@ public class Part {
         }
     }
 
-      // Status Enum
       public enum Status {
         ACTIVE,    // Show in all product searches 
         OBSOLETE,  // Behaves like the product is deleted, do not show anywhere
@@ -114,8 +124,16 @@ public class Part {
     }
     }
 
-    
+    public enum ControlState {
+        YES,
+        NO
+    }
 
+    public enum ControlStock {
+        YES, 
+        NO
+    }
+    
     // Getters and setters
     public String getId() {
         return id;
@@ -132,7 +150,7 @@ public class Part {
     // Since the uuid should be non-editable and hidden, you can initialize it with a generated value when a Part is created, and then make it immutable (i.e., no setters).
     // public void setUuid(String uuid) {
     //     this.uuid = uuid;
-    // }
+    // } // not needed for now
     
     public String getSku() {
         return sku;
@@ -151,6 +169,7 @@ public class Part {
         return status;
     }
     
+    // Comment: This part a little confusing!
     public void setStatus(Status status) {
         if (this.status == Status.OBSOLETE && status != Status.OBSOLETE) {
             throw new IllegalArgumentException("Cannot change status from OBSOLETE to another status.");
@@ -168,8 +187,15 @@ public class Part {
     }
     
     public void setDescription(String description) {
+        if (description == null || description.isBlank()) {
+            throw new IllegalArgumentException("Description must not be null or blank.");
+        }
+        if (description.length() > 40) {
+            throw new IllegalArgumentException("Description must be less than or equal to 40 characters.");
+        }
         this.description = description;
     }
+    
     
     public Supplier getSupplier() {
         return supplier;
@@ -184,17 +210,108 @@ public class Part {
     }
     
     public void setCostPrice(double costPrice) {
+        if (costPrice <= 0) {
+            throw new IllegalArgumentException("Cost price must be greater than zero");
+        }
         this.costPrice = costPrice;
     }
     
-    public double getSellingPrice() {
+    public Double getSellingPrice() {
+        if (sellingPrice == null) {
+            // Set a default value if sellingPrice is null
+            return 0.0;
+        }
         return sellingPrice;
     }
     
-    public void setSellingPrice(double sellingPrice) {
-        this.sellingPrice = sellingPrice;
+    
+    // public void setSellingPrice(double sellingPrice) {
+    //     this.sellingPrice = sellingPrice;
+    // } // not needed for now
+    // Method to calculate sellingPrice (e.g., based on costPrice and a profit margin)
+    public void calculateSellingPrice(double costPrice, double marginPercentage) {
+    if (marginPercentage < 0) {
+        throw new IllegalArgumentException("Margin percentage cannot be negative");
+    }
+    this.sellingPrice = costPrice + (costPrice * marginPercentage / 100);
+    } 
+
+    public void calculateSellingPrice() {
+        if (this.costPrice <= 0) {
+            throw new IllegalArgumentException("Cost price must be greater than 0 to calculate selling price.");
+        }
+        this.sellingPrice = this.costPrice * 1.5; // Selling price is 1.5 times the cost price
+    }
+
+    public String getPhotoUrl() {
+        return photoUrl;
+    }
+
+    // Updated Getter and Setter for photoUrl
+    // The photoUrl field should only be updated after a successful image upload. Here’s how the setter could handle validation:
+    public void setPhotoUrl(String photoUrl) {
+        if (photoUrl == null || !photoUrl.matches("^(http|https)://.*\\.(jpg|jpeg|png|gif)$")) {
+            throw new IllegalArgumentException("Invalid photo URL. Must be a valid image URL (http/https and .jpg/.jpeg/.png/.gif).");
+        }
+        this.photoUrl = photoUrl;
     }
     
+    
+    public PartType getPartType() {
+        return partType;
+    }
+    
+    public void setPartType(PartType partType) {
+        this.partType = partType;
+    }
+        
+    public boolean isArchived() {
+        return archived;
+    }
+    
+    public void setArchived(boolean archived) {
+        this.archived = archived;
+    }
+    
+    public ControlState getControlled() {
+        return controlled;
+    }
+    
+    public void setControlled(ControlState controlled) {
+        this.controlled = controlled;
+    }
+    
+    public ControlStock getControlStock() {
+        return controlStock;
+    } 
+    public void setControlStock(ControlStock controlStock) {
+        this.controlStock = controlStock;
+    } 
+    // Logic to enable stock fields when controlStock is YES
+    public void handleStockFields() {
+        if (ControlStock.YES.equals(this.controlStock)) {
+            // Ensure stock-related fields are set appropriately
+            this.stockLevel = this.stockLevel != null ? this.stockLevel : 0;
+            this.reservedStock = this.reservedStock != null ? this.reservedStock : 0;
+            this.availableStock = this.availableStock != null ? this.availableStock : 0;
+    
+            // Set default minStockLevel if not provided
+            if (this.minStockLevel == null || this.minStockLevel <= 0) {
+                this.minStockLevel = 2; // Default value
+            }
+        } else {
+            // Reset or ignore stock-related fields when controlStock is not YES
+            this.stockLevel = 0;
+            this.reservedStock = 0;
+            this.availableStock = 0;
+            this.minStockLevel = 0;
+        }
+    }
+    
+
+    // stockLevel, reservedStock, availableStock, minStockLevel DEPENDS on controlStock
+    // if controlStock, enable them.
+
     public int getStockLevel() {
         return stockLevel;
     }
@@ -216,31 +333,14 @@ public class Part {
     }
     
     public void setAvailableStock(int availableStock) {
+        // Ensure that Available Stock is less than or equal to Stock Level
+        if (availableStock > (stockLevel - reservedStock)) {
+            throw new IllegalArgumentException("Available stock cannot exceed the stock level minus reserved stock.");
+        }
         this.availableStock = availableStock;
     }
     
-    public String getPhotoUrl() {
-        return photoUrl;
-    }
-    
-    // Updated Getter and Setter for photoUrl
-    // The photoUrl field should only be updated after a successful image upload. Here’s how the setter could handle validation:
-    public void setPhotoUrl(String photoUrl) {
-        if (photoUrl == null || !photoUrl.matches("^(http|https)://.*\\.(jpg|jpeg|png|gif)$")) {
-            throw new IllegalArgumentException("Invalid photo URL. Must be a valid image URL (http/https and .jpg/.jpeg/.png/.gif).");
-        }
-        this.photoUrl = photoUrl;
-    }
-    
-    
-    public PartType getPartType() {
-        return partType;
-    }
-    
-    public void setPartType(PartType partType) {
-        this.partType = partType;
-    }
-    
+
     public int getMinStockLevel() {
         return minStockLevel;
     }
@@ -248,31 +348,6 @@ public class Part {
     public void setMinStockLevel(int minStockLevel) {
         this.minStockLevel = minStockLevel;
     }
-    
-    public boolean isArchived() {
-        return archived;
-    }
-    
-    public void setArchived(boolean archived) {
-        this.archived = archived;
-    }
-    
-    public boolean isControlled() {
-        return controlled;
-    }
-    
-    public void setControlled(boolean controlled) {
-        this.controlled = controlled;
-    }
-    
-    public boolean isControlStock() {
-        return controlStock;
-    }
-    
-    public void setControlStock(boolean controlStock) {
-        this.controlStock = controlStock;
-    }
-    
 
     @Override
     public String toString() {
@@ -296,4 +371,6 @@ public class Part {
                 ", controlStock=" + controlStock +
                 '}';
     }
+
+    
 }
