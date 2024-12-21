@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.slf4j.Logger;
@@ -35,7 +36,17 @@ public class PartController {
     @PostMapping
     public Part createPart(@RequestBody Part part) {
         logger.info("Received POST request to create part: {}", part);
-        return partService.savePart(part);  // Use PartService here
+    
+        // Ensure that sellingPrice is calculated if it's not provided
+        if (part.getSellingPrice() == null || part.getSellingPrice() == 0.0) {
+            part.calculateSellingPrice(); // Calculate sellingPrice if it's missing or 0
+        }
+    
+        // Handle stock-related fields and minStockLevel if controlStock is YES
+        part.handleStockFields();  // Enable stock-related fields if controlStock is YES
+    
+        // Save the part using the PartService
+        return partService.savePart(part);
     }
 
     @GetMapping
