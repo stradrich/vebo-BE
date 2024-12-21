@@ -1,6 +1,7 @@
 package com.example.inventory.service;
 
 import com.example.inventory.model.Part;
+import com.example.inventory.model.Part.ControlStock;
 import com.example.inventory.repository.PartRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,16 +55,36 @@ public class PartService {
             existingPart.setDescription(updatedPart.getDescription());
             existingPart.setSupplier(updatedPart.getSupplier());
             existingPart.setCostPrice(updatedPart.getCostPrice());
-            existingPart.setSellingPrice(updatedPart.getSellingPrice());
-            existingPart.setStockLevel(updatedPart.getStockLevel());
-            existingPart.setReservedStock(updatedPart.getReservedStock());
-            existingPart.setAvailableStock(updatedPart.getAvailableStock());
+            // existingPart.setSellingPrice(updatedPart.getSellingPrice());
+             // Calculate selling price dynamically
+             existingPart.calculateSellingPrice(); 
             existingPart.setPhotoUrl(updatedPart.getPhotoUrl());
             existingPart.setPartType(updatedPart.getPartType());
-            existingPart.setMinStockLevel(updatedPart.getMinStockLevel());
             existingPart.setArchived(updatedPart.isArchived());
-            existingPart.setControlled(updatedPart.isControlled());
-            existingPart.setControlStock(updatedPart.isControlStock());
+            existingPart.setControlled(updatedPart.getControlled());
+            // existingPart.setControlStock(updatedPart.isControlStock());
+            // stockLevel, reservedStock, availableStock, minStockLevel DEPENDS on controlStock
+            // existingPart.setStockLevel(updatedPart.getStockLevel());
+            // existingPart.setReservedStock(updatedPart.getReservedStock());
+            // existingPart.setAvailableStock(updatedPart.getAvailableStock());
+            // existingPart.setMinStockLevel(updatedPart.getMinStockLevel());
+            // Handle stock-related fields if controlStock is YES
+            if (updatedPart.getControlStock() != null && updatedPart.getControlStock() == ControlStock.YES) {
+                existingPart.setControlStock(ControlStock.YES);
+                existingPart.setStockLevel(updatedPart.getStockLevel());
+                existingPart.setReservedStock(updatedPart.getReservedStock());
+                existingPart.setAvailableStock(updatedPart.getAvailableStock());
+                existingPart.setMinStockLevel(updatedPart.getMinStockLevel());
+            } else {
+                existingPart.setControlStock(ControlStock.NO);
+                existingPart.setStockLevel(0);
+                existingPart.setReservedStock(0);
+                existingPart.setAvailableStock(0);
+                existingPart.setMinStockLevel(0);
+            }
+            
+            // Debugging: Log the updated part
+            System.out.println("Updated Part: " + updatedPart);
 
             // Save and return the updated part
             return partRepository.save(existingPart);
@@ -80,6 +101,7 @@ public class PartService {
     public void deleteAllParts() {
         partRepository.deleteAll();
     }
+    
     
     
 }
