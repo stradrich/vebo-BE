@@ -1,8 +1,11 @@
 package com.example.inventory.model;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -85,6 +88,24 @@ public class Part {
     
     @JsonProperty("minStockLevel")
     private Integer minStockLevel; // Nullable
+
+    // EXTRA FIELDS
+    // Create timestamp
+    @CreatedDate
+    @JsonProperty("createdAt")
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @JsonProperty("updatedAt")
+    private LocalDateTime updatedAt;
+
+    @JsonProperty("statusChangeReason")
+    private String statusChangeReason;
+
+    @JsonProperty("updatedBy")
+    private String updatedBy;
+
+
 
     // ENUMS LISTS
     public enum PartType {
@@ -347,6 +368,45 @@ public class Part {
     
     public void setMinStockLevel(int minStockLevel) {
         this.minStockLevel = minStockLevel;
+    }
+
+    // EXTRA SETTER AND GETTER
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+    
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+    
+    public String getStatusChangeReason() {
+        return statusChangeReason;
+    }
+    
+    public void setStatusChangeReason(String statusChangeReason) {
+        // if (statusChangeReason == null || statusChangeReason.trim().isEmpty()) {
+        //     throw new IllegalArgumentException("Status change reason cannot be null or empty.");
+        // }
+        this.statusChangeReason = statusChangeReason;
+    }
+    
+    public String getUpdatedBy() {
+        return updatedBy;
+    }
+    
+    public void setUpdatedBy(String updatedBy) {
+        // if (updatedBy == null || updatedBy.trim().isEmpty()) {
+        //     throw new IllegalArgumentException("Updated by cannot be null or empty.");
+        // }
+        this.updatedBy = updatedBy;
     }
 
     @Override

@@ -23,9 +23,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
-
 @RestController
 @RequestMapping("/parts")
+@CrossOrigin(origins = "http://localhost:3000") // Allow requests from localhost:3000
 public class PartController {
 
     private static final Logger logger = LoggerFactory.getLogger(PartController.class);
@@ -92,16 +92,18 @@ public class PartController {
     private PhotoStorageService photoStorageService;
 
    // Handle photo upload
-    @PostMapping("/{id}/uploadPhoto")
-    public ResponseEntity<String> uploadPhoto(@PathVariable("id") String partId, @RequestParam("file") MultipartFile file) {
+  // Handle photo upload
+    @PostMapping("/{sku}/uploadPhoto")
+    public ResponseEntity<String> uploadPhoto(@PathVariable("sku") String sku, @RequestParam("file") MultipartFile file) {
         try {
             // Use PhotoStorageService to handle file storage
-            photoStorageService.storePhoto(file, partId);
+            photoStorageService.storePhoto(file, sku);
             return ResponseEntity.ok("File uploaded successfully");
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error uploading photo: " + e.getMessage());
         }
     }
+
 
 
    // Handle photo retrieval
