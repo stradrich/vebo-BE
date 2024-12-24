@@ -45,6 +45,10 @@ public class PartController {
         // Handle stock-related fields and minStockLevel if controlStock is YES
         part.handleStockFields();  // Enable stock-related fields if controlStock is YES
     
+        // Log values before saving
+        logger.info("Before save - stockLevel: {}, reservedStock: {}, availableStock: {}",
+        part.getStockLevel(), part.getReservedStock(), part.getAvailableStock());
+
         // Save the part using the PartService
         return partService.savePart(part);
     }

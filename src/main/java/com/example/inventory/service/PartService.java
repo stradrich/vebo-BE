@@ -16,9 +16,13 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Service
 public class PartService {
-
+    private static final Logger logger = LoggerFactory.getLogger(PartService.class);
+    
     private final PartRepository partRepository;
 
     @Autowired
@@ -27,6 +31,12 @@ public class PartService {
     }
 
     public Part savePart(Part part) {
+        logger.info("Saving part: {}", part);
+
+        // Log final values before persisting
+        logger.info("Final values - stockLevel: {}, reservedStock: {}, availableStock: {}",
+                    part.getStockLevel(), part.getReservedStock(), part.getAvailableStock());
+
         return partRepository.save(part);
     }
     

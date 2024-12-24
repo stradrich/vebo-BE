@@ -56,7 +56,7 @@ public class Part {
     // Storage: Store the image either in a cloud storage solution (e.g., AWS S3, Google Cloud Storage) or locally (not recommended for scalability).
     // URL Generation: Generate a public URL pointing to the uploaded photo.
     // Assignment to photoUrl: Save the generated URL to the photoUrl field in the database.
-    @JsonProperty("photoUrl")
+    @JsonProperty("photoUrl") // http://example.com/placeholder.gif
     private String photoUrl = null;
 
 
@@ -77,14 +77,24 @@ public class Part {
     // stockLevel, reservedStock, availableStock, minStockLevel DEPENDS on controlStock
     // if controlStock, enable them. 
     // int defaults to 0, which might incorrectly suggest that the field is intentionally initialized.
+    // @JsonProperty("stockLevel")
+    // private Integer stockLevel; // Nullable
+    
+    // @JsonProperty("reservedStock")
+    // private Integer reservedStock; // Nullable
+    
+    // @JsonProperty("availableStock")
+    // private Integer availableStock; // Nullable
+
     @JsonProperty("stockLevel")
-    private Integer stockLevel; // Nullable
-    
+    private Integer stockLevel = 0; // Default to 0
+
     @JsonProperty("reservedStock")
-    private Integer reservedStock; // Nullable
-    
+    private Integer reservedStock = 0; // Default to 0
+
     @JsonProperty("availableStock")
-    private Integer availableStock; // Nullable
+    private Integer availableStock = 0; // Default to 0
+
     
     @JsonProperty("minStockLevel")
     private Integer minStockLevel; // Nullable
@@ -310,11 +320,14 @@ public class Part {
     } 
     // Logic to enable stock fields when controlStock is YES
     public void handleStockFields() {
+        // If controlStock is ControlStock.YES
         if (ControlStock.YES.equals(this.controlStock)) {
             // Ensure stock-related fields are set appropriately
-            this.stockLevel = this.stockLevel != null ? this.stockLevel : 0;
-            this.reservedStock = this.reservedStock != null ? this.reservedStock : 0;
-            this.availableStock = this.availableStock != null ? this.availableStock : 0;
+            this.stockLevel = (this.stockLevel != null) ? this.stockLevel : 0;
+            this.reservedStock = (this.reservedStock != null) ? this.reservedStock : 0;
+    
+            // Calculate availableStock based on stockLevel and reservedStock
+            this.availableStock = this.stockLevel - this.reservedStock;
     
             // Set default minStockLevel if not provided
             if (this.minStockLevel == null || this.minStockLevel <= 0) {
@@ -328,6 +341,8 @@ public class Part {
             this.minStockLevel = 0;
         }
     }
+    
+    
     
 
     // stockLevel, reservedStock, availableStock, minStockLevel DEPENDS on controlStock
