@@ -9,6 +9,8 @@ import jakarta.annotation.Resource;
 import java.nio.file.Path;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
@@ -18,11 +20,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+
 @RestController
 @RequestMapping("/parts")
 @CrossOrigin(origins = "http://localhost:3000") // Allow requests from localhost:3000
@@ -98,15 +112,36 @@ public class PartController {
    // Handle photo upload
   // Handle photo upload
     @PostMapping("/{sku}/uploadPhoto")
-    public ResponseEntity<String> uploadPhoto(@PathVariable("sku") String sku, @RequestParam("file") MultipartFile file) {
-        try {
-            // Use PhotoStorageService to handle file storage
-            photoStorageService.storePhoto(file, sku);
-            return ResponseEntity.ok("File uploaded successfully");
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error uploading photo: " + e.getMessage());
-        }
+    public ResponseEntity<String> uploadPhoto(@PathVariable("sku") String sku, @RequestParam("file") MultipartFile file) throws IOException {
+        // Use PhotoStorageService to handle file storage
+        photoStorageService.storePhoto(file, sku);
+        return ResponseEntity.ok("File uploaded successfully");
     }
+    
+    // @GetMapping("/uploads/photos/{folder}/{filename}")
+    // @ResponseBody
+    // public ResponseEntity<Resource> getFile(@PathVariable String folder, @PathVariable String filename) {
+    //     Path path = Paths.get("/Users/drichintoshed/Desktop/interview/veboApp/veboBE/inventory/uploads/photos/" + folder + "/" + filename);
+    //     Resource resource = (Resource) new FileSystemResource(path);
+    //     if (((FileSystemResource) resource).exists()) {
+    //         return ResponseEntity.ok()
+    //             .contentType(MediaType.IMAGE_JPEG)
+    //             .body(resource);
+    //     } else {
+    //         return ResponseEntity.notFound().build();
+    //     }
+    // }
+    
+    
+    
+
+
+
+    
+    
+
+    
+
 
 
 

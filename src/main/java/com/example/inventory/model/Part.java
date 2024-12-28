@@ -132,7 +132,8 @@ public class Part {
         BA,
         KH,
         BY,
-        CA;
+        CA,
+        etc;
 
         @JsonCreator
         public static Supplier fromValue(String value) {
@@ -281,9 +282,13 @@ public class Part {
     // Updated Getter and Setter for photoUrl
     // The photoUrl field should only be updated after a successful image upload. Here’s how the setter could handle validation:
     public void setPhotoUrl(String photoUrl) {
-        if (photoUrl == null || !photoUrl.matches("^(http|https)://.*\\.(jpg|jpeg|png|gif)$")) {
-            throw new IllegalArgumentException("Invalid photo URL. Must be a valid image URL (http/https and .jpg/.jpeg/.png/.gif).");
+        // if (photoUrl == null || !photoUrl.matches("^(http|https)://.*\\.(jpg|jpeg|png|gif)$")) {
+        //     throw new IllegalArgumentException("Invalid photo URL. Must be a valid image URL (http/https and .jpg/.jpeg/.png/.gif).");
+        // }
+        if (!photoUrl.matches(".*\\.(jpg|jpeg|png|gif)$")) {
+            throw new IllegalArgumentException("Invalid photo URL.");
         }
+        
         this.photoUrl = photoUrl;
     }
     
