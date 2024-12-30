@@ -1,1 +1,3 @@
 not empty
+
+note: photo file names are named after the SKU, so don't allow people to change SKU easily

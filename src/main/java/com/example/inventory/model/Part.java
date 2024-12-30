@@ -13,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
@@ -41,7 +42,9 @@ public class Part {
     private Supplier supplier; 
 
     @JsonProperty("costPrice")
-    @Min(value = 0, message = "Cost price must be greater than or equal to 0")
+    // @Min(value = 0, message = "Cost price must be greater than or equal to 0")
+    // private double costPrice;
+    @DecimalMin(value = "0.01", message = "Cost price must be greater than 0")
     private double costPrice;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -241,10 +244,24 @@ public class Part {
         return costPrice;
     }
     
+    // public void setCostPrice(double costPrice) {
+    //     if (costPrice <= 0) {
+    //         throw new IllegalArgumentException("Cost price must be greater than zero");
+    //     }
+    //     this.costPrice = costPrice;
+    // }
+
     public void setCostPrice(double costPrice) {
-        if (costPrice <= 0) {
-            throw new IllegalArgumentException("Cost price must be greater than zero");
+        if (costPrice < 0.00) {
+            throw new IllegalArgumentException("Cost price must be greater than or equal to 0.");
         }
+    
+        // Ensure no leading zeros unless it's `0.00`
+        String costPriceStr = String.format("%.2f", costPrice);
+        if (costPriceStr.matches("^0[1-9]+.*")) {
+            throw new IllegalArgumentException("Invalid cost price. Leading zeros are not allowed.");
+        }
+    
         this.costPrice = costPrice;
     }
     
@@ -262,15 +279,15 @@ public class Part {
     // } // not needed for now
     // Method to calculate sellingPrice (e.g., based on costPrice and a profit margin)
     public void calculateSellingPrice(double costPrice, double marginPercentage) {
-    if (marginPercentage < 0) {
+    if (marginPercentage < 0.00) {
         throw new IllegalArgumentException("Margin percentage cannot be negative");
     }
     this.sellingPrice = costPrice + (costPrice * marginPercentage / 100);
     } 
 
     public void calculateSellingPrice() {
-        if (this.costPrice <= 0) {
-            throw new IllegalArgumentException("Cost price must be greater than 0 to calculate selling price.");
+        if (this.costPrice <= 0.00) {
+            throw new IllegalArgumentException("Cost price must be greater than 0.00 to calculate selling price.");
         }
         this.sellingPrice = this.costPrice * 1.5; // Selling price is 1.5 times the cost price
     }
@@ -281,16 +298,28 @@ public class Part {
 
     // Updated Getter and Setter for photoUrl
     // The photoUrl field should only be updated after a successful image upload. Here’s how the setter could handle validation:
-    public void setPhotoUrl(String photoUrl) {
-        // if (photoUrl == null || !photoUrl.matches("^(http|https)://.*\\.(jpg|jpeg|png|gif)$")) {
-        //     throw new IllegalArgumentException("Invalid photo URL. Must be a valid image URL (http/https and .jpg/.jpeg/.png/.gif).");
-        // }
-        if (!photoUrl.matches(".*\\.(jpg|jpeg|png|gif)$")) {
-            throw new IllegalArgumentException("Invalid photo URL.");
-        }
+    // public void setPhotoUrl(String photoUrl) {
+    //     // if (photoUrl == null || !photoUrl.matches("^(http|https)://.*\\.(jpg|jpeg|png|gif)$")) {
+    //     //     throw new IllegalArgumentException("Invalid photo URL. Must be a valid image URL (http/https and .jpg/.jpeg/.png/.gif).");
+    //     // }
+    //     if (!photoUrl.matches(".*\\.(jpg|jpeg|png|gif)$")) {
+    //         throw new IllegalArgumentException("Invalid photo URL.");
+    //     }
         
-        this.photoUrl = photoUrl;
+    //     this.photoUrl = photoUrl;
+    // }
+
+    public void setPhotoUrl(String photoUrl) {
+        // If the photoUrl is null or empty, use the default image URL
+        if (photoUrl == null || photoUrl.trim().isEmpty()) {
+            this.photoUrl = "https://cdn1.npcdn.net/images/1628147456banner2.gif"; // Default URL
+        } else if (!photoUrl.matches(".*\\.(jpg|jpeg|png|gif)$")) {
+            throw new IllegalArgumentException("Invalid photo URL. Must be a valid image URL (http/https and .jpg/.jpeg/.png/.gif).");
+        } else {
+            this.photoUrl = photoUrl;
+        }
     }
+    
     
     
     public PartType getPartType() {
